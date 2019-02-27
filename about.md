@@ -4,6 +4,6 @@ title: 关于我
 permalink: /about/
 ---
 
-I'm Programmer for Python & Django. I've made quite a few web apps, especially on Django. Now, I am doing more on backend.
+I'm a Coder  
 
-email: x010[at]foxmail.com
+email: x010@foxmail.com
