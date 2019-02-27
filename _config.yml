@@ -1,11 +1,11 @@
-title: Stack Problems
-description: My Personal Stack Problems
-author: Agus Makmun
-github: https://github.com/agusmakmun
-about: I'm Programmer for Python & Django. I've made quite a few web apps, especially on Django.
+title: X010
+description: 个人站点-分享一些技术文章
+author: Jeff.wu
+github: https://github.com/x010
+about: I'm a Coder
 disqus_shortname: stackproblems
 google_analytics: UA-XXXXXXXX-Y
-avatar_url: /static/img/avatar.jpg
+avatar_url: /static/img/12521697.jpeg
 
 enableTags: true
 tagarray: []
