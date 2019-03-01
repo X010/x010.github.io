@@ -51,10 +51,19 @@ categories: [bigdata]
 上报数据地址:http://www.viewc.org/logs
   
 ###### 字段定义  
-| 字段 | 类型 | 说明 |  
-| ------------ | ------------- | ------------- |  
-| Content from cell 1 | Content from cell 2 | Content from cell 2 |  
-| Content in the first column | Content in the second column | Content in the second column |  
+```$xslt
+一个字段的定义包含三个部分　　
+字段名：具体的名称一般使用简化的字段　　
+类型：该字段使用什么类型的数据  
+说明：对于该字段的描述用于让别人对该字段取什么的值有可执行理解  
+
+EG:
+
+cookie  String  获取网站Cookie UUID,用于标识唯一的用户，如果该值不存在时，则生一个UUID的Cookie,种在viewc.org下面，有效期999年　　
+url     String  获取当前浏览器地址，用于标识当前页面  
+ref     String  获取当前页面的来源页面，如果没有则为空  
+lob     String  扩展字段用于业务扩展格式采用 key=value,多个值以＆分隔，并进行urlencode
+```
   
   
   
