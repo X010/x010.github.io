@@ -51,7 +51,7 @@ categories: [bigdata]
 上报数据地址:http://www.viewc.org/logs
   
 ###### 字段定义  
-| 字段 | 类型　| 说明 |  
+| 字段 | 类型 | 说明 |  
 | ------------ | ------------- | ------------- |  
 | Content from cell 1 | Content from cell 2 | Content from cell 2 |  
 | Content in the first column | Content in the second column | Content in the second column |  
