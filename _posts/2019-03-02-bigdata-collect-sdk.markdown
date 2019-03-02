@@ -37,13 +37,89 @@ categories: [bigdata]
 　　用户自定义事件其实是在上述特定事件无法满足的基础上，为了保证SDK灵活性，而扩展的一类事件
 主要特性是不对用户上报的数据及时间不做特定的定义，开发人员可以在任意地点进行调用。以保证SDK灵活性与扩展性。
   
-　　
-
 ##### 第二步：我们将这些事件分解为数据埋点  
   
+###### 用户浏览类事件  
+  
+上报点：页面加载完成时上报，上报完成是指ＷＥＢ页面的ＤＯＭ结构加载完成，采用实时上报
+上报范围：该活动涉及的所有页面  
+上报协议：采用HTTP GET方式  
+上报数据地址:http://www.viewc.org/logs  
+```$xslt
+一个字段的定义包含三个部分　　
+字段名：具体的名称一般使用简化的字段　　
+类型：该字段使用什么类型的数据  
+说明：对于该字段的描述用于让别人对该字段取什么的值有可执行理解  
+
+EG:
+
+event   String  固定值"PV"  
+cookie  String  获取网站Cookie UUID,用于标识唯一的用户，如果该值不存在时，则生一个UUID的Cookie,种在viewc.org下面，有效期999年　　
+url     String  获取当前浏览器地址，用于标识当前页面  
+ref     String  获取当前页面的来源页面，如果没有则为空  
+lob     String  扩展字段用于业务扩展格式采用 key=value,多个值以＆分隔，并进行urlencode
+```
+  
+###### 用户点击类事件  
+  
+上报点：用户点击时上报对应具体的Click事件  
+上报范围：根据产品业务范围而定  
+上报协议：采用HTTP GET方式  
+上报数据地址:http://www.viewc.org/logs  
+```$xslt
+EG:
+
+event   String  固定值"Click"  
+cookie  String  获取网站Cookie UUID,用于标识唯一的用户，如果该值不存在时，则生一个UUID的Cookie,种在viewc.org下面，有效期999年　　
+url     String  获取当前浏览器地址，用于标识当前页面  
+label   String  控件名称  
+lob     String  扩展字段用于业务扩展格式采用 key=value,多个值以＆分隔，并进行urlencode
+```
+  
+###### 用户控件曝光类事件  
+  
+上报点：用户触发控件曝光时上报，具体对应Show事件或者数据加载完成Success事件  
+上报范围：根据产品业务范围而定  
+上报协议：采用HTTP GET方式  
+上报数据地址:http://www.viewc.org/logs  
+```$xslt
+EG:
+
+event   String  固定值"show"  
+cookie  String  获取网站Cookie UUID,用于标识唯一的用户，如果该值不存在时，则生一个UUID的Cookie,种在viewc.org下面，有效期999年　　
+url     String  获取当前浏览器地址，用于标识当前页面  
+label   String  控件名称  
+lob     String  扩展字段用于业务扩展格式采用 key=value,多个值以＆分隔，并进行urlencode
+```
+  
+###### 用户自定义事件  
+  
+上报点：不做具体的定义，以具体产品代码触发而定  
+上报范围：根据产品业务范围而定  
+上报协议：采用HTTP GET方式  
+上报数据地址:http://www.viewc.org/logs  
+```$xslt
+EG:
+
+event   String  固定值"custom"  
+cookie  String  获取网站Cookie UUID,用于标识唯一的用户，如果该值不存在时，则生一个UUID的Cookie,种在viewc.org下面，有效期999年　　
+lob     String  扩展字段用于业务扩展格式采用 key=value,多个值以＆分隔，并进行urlencode
+```
   
 ##### 第三步：我们找到对应的实现方法  
-　　
+　　根据上面分解的具体的埋点文档，我们进行SDK具体实现，同样我们需要进行一些约定，从而
+形成具体的规范比如引入方式等。我们具体实现抽象成如下几部分:  
+  
+###### 引入范围  
+  
+###### 各事件接入规范  
+  
+
 #### WEBSDK如何与其它终端SDK配合使用  
-
-
+  我们知道WEBSDK主要应用于网页端上面，随着移动时代的到来。我们会发现很多APP里面有
+很多的Ｈ５页面，我们Ｈ５页面可以使用WEBSDK实现上报。那当我们Ｈ５被在具ＡＰＰ里面打开时
+我们怎么和移动端的数据上报进行打通。这是非常关键的一步，我们知道在网页端我们通过Cookie跟踪用户
+移动端可能过用户的imei或者openudid/Idfa等跟踪用户将用户的行为进行串联，但是当用户同时使用Ｍ站与ＡＰＰ里我们怎么将用户的信息进行关联实现数据
+价值的最大化。通常我们使用jsbridge，我们知道ＡＰＰ通过webview组件实现页面的加载，本质上就是一个简单的版的浏览器。我们通过将移动端的ＳＤＫ中的
+上报方法通过webview注入到webview中，websdk通过ua 字段进行判断以识别该页面正在ＡＰＰ内打开，从而在ＡＰＰ内打开时通过调用注入的方法实现将
+网页产生的数据上报通过jsbridge通过app代码走移动sdk上报。具体实现原理后续会讲到。
