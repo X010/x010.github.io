@@ -110,10 +110,48 @@ lob     String  扩展字段用于业务扩展格式采用 key=value,多个值�
 　　根据上面分解的具体的埋点文档，我们进行SDK具体实现，同样我们需要进行一些约定，从而
 形成具体的规范比如引入方式等。我们具体实现抽象成如下几部分:  
   
-###### 引入范围  
+###### 引入方式  
+
+```$xslt
+以下是设计一种引入方式，具体根据公司前端框架而定
+
+<script>
+(function(G,D,s,c,p){
+c={
+site_verion:window._M_SITE_VERSION,
+server_url:"logs",
+sdk:"/sdk-web-sdk.js"
+};
+function load(t){
+  s=D.createElmenet("script");
+  s.src=c.sdk;
+  t=D.getElementByTagName("script");
+  t=t[t.length-1];
+  t.parentNode.insertBefore(s,t);
+}
+})(this.document)
+<script>
+```  
   
 ###### 各事件接入规范  
+  浏览类自动上报声明方式  
+```$xslt
+以下是浏览类自动上报一种声明方式，SDK在过滤页面DOM结构时，获取Ｂody相关属性，结合页面相关数据进行上报
+<body td-stat-page="demopage1" td-stat-lob="k1=v1&k2=v2"></body>
+
+如下是单页面应用也可以将相关属性定义在DIV中　如
+<div class="td-channel" td-stat-page="demopage1" td-stat-lob="k1=v1&k2=v2"></div>
+```  
   
+  点击类自动上报声明方式  
+```$xslt
+通常我们并不会收集所有元素的click，需要收集的控件，我们通常通过声明的方式进行定义如：
+<div td-stat-mod="index_slider"></div>
+表示该模块产生的点击进行收集，当然也可以放在具体的控件上面
+<span td-stat-click=""></span>
+```  
+  同理其它类型的事件也可以采用这种声明的方式进行，从而形成一个WEBSDK,加快数据采集的效率，而自定义的方法则实际是为前端应用提供一个可调用的接口，该
+接口不限制定义的参与，由客户端任意进行拼接。
 
 #### WEBSDK如何与其它终端SDK配合使用  
   我们知道WEBSDK主要应用于网页端上面，随着移动时代的到来。我们会发现很多APP里面有
