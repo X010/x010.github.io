@@ -33,11 +33,77 @@ categories: [bigdata]
 
 ```
   如果是内网的业务系统Application LOG我们怎么选择？
-  
+  内网的数据收集服务通常是以文件信息批量进行传输，通常来说其吞吐量大，并发小，走内网。一般我们会选择像Apache Flume这类工具。
+```aidl
+
+```
+    
   如果是业务系统的生产的RMDBS数据我们怎么选择？  
+  从RMDBS收集数据一般的步骤是从RMDBS中导出数据，然后将数据以文件的方式进行传输。
+```aidl
 
+```
+  
 #### 包接包送
+  当数据收集落地之后，如何进行后面的数据分发工作。通常有二种情况，第一种将数据推送到存储上面。第二种将数据发送到消息队列。假设我们以存储是
+HDFS，消息队列以Kafka为组件。
+```aidl
+将数据推送到存储上面:
+ hdfs put
+使用方法：hadoop fs -put <localsrc> ... <dst>
 
+从本地文件系统中复制单个或多个源路径到目标文件系统。也支持从标准输入中读取输入写入目标文件系统。
+hadoop fs -put localfile /user/hadoop/hadoopfile
+hadoop fs -put localfile1 localfile2 /user/hadoop/hadoopdir
+hadoop fs -put localfile hdfs://host:port/hadoop/hadoopfile
+hadoop fs -put - hdfs://host:port/hadoop/hadoopfile 
+从标准输入中读取输入。
+返回值：
+成功返回0，失败返回-1。
+
+将数据发送到Kafka上面:
+我们直接可以通过配置Flume Source配置为Directory
+示例:
+a1.sources = s1  
+a1.sinks = k1  
+a1.channels = c1  
+   
+# Describe/configure the source  
+a1.sources.s1.type =spooldir  
+a1.sources.s1.spoolDir =/home/hadoop/logs  
+a1.sources.s1.fileHeader= true  
+a1.sources.s1.channels =c1  
+   
+# Describe the sink  
+a1.sinks.k1.type = logger  
+a1.sinks.k1.channel = c1  
+   
+# Use a channel which buffers events inmemory  
+a1.channels.c1.type = memory 
+
+我们直接可以通过配置Flume Sink配置为Kafka
+示例:
+Flume2KafkaAgent.sources=mysource
+Flume2KafkaAgent.channels=mychannel
+Flume2KafkaAgent.sinks=mysink
+
+Flume2KafkaAgent.sources.mysource.type=spooldir
+Flume2KafkaAgent.sources.mysource.channels=mychannel
+Flume2KafkaAgent.sources.mysource.spoolDir=/usr/local/share/applications/tmp/flumetokafka/logs
+
+Flume2KafkaAgent.sinks.mysink.channel=mychannel
+Flume2KafkaAgent.sinks.mysink.type=org.apache.flume.sink.kafka.KafkaSink
+Flume2KafkaAgent.sinks.mysink.kafka.bootstrap.servers=master:9092,slave1:9092,slave2:9092,slave3:9092
+Flume2KafkaAgent.sinks.mysink.kafka.topic=flume-data
+Flume2KafkaAgent.sinks.mysink.kafka.batchSize=20
+Flume2KafkaAgent.sinks.mysink.kafka.producer.requiredAcks=1
+
+Flume2KafkaAgent.channels.mychannel.type=memory
+Flume2KafkaAgent.channels.mychannel.capacity=30000
+Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
+
+```
+    
 #### 收集的整体架构  
   
 
