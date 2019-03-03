@@ -166,7 +166,7 @@ Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
 ```
   
 #### 收集的整体架构  
-![collect_arch](/static/img/post/collect_arch.jpg){:height=""300" width="600"}
+![collect_arch](/static/img/post/collect_arch.jpg){:height=""300" width="720"}
    
 #### 数据收集过程中的几点思考  
   
