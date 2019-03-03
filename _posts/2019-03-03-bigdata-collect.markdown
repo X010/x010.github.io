@@ -166,14 +166,17 @@ Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
 ```
   
 #### 收集的整体架构  
+![collect_arch](/static/img/_posts/collect_arch.jpg){:height=""300" width="600"}
+   
+#### 数据收集过程中的几点思考  
+  
   
 
-#### 数据收集过程中的几点思考  
-
-
 #### 能不能自己造个轮子  
-
+  
+  
 
 #### 与数据收集相关几个重要事项　　
-
+  
+  
   
