@@ -170,6 +170,13 @@ Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
    
 #### 数据收集过程中的几点思考  
   
+###### 收集服务器是否要过滤部分数据  
+  
+  
+###### 收集服务器上面是否要落地数据  
+  
+  
+###### 如何压缩数据
   
 
 #### 能不能自己造个轮子  
