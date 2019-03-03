@@ -30,12 +30,74 @@ categories: [bigdata]
   如何是客户端上报的数据我们如何选择?
   客户端上报的数据一般实时，单条记录不会太大，我们一般选择直接Nginx做为数据收集服务器，或者自己也可以根据情况开发一个log server,以之前SDK上报的数据为例我们如何搭建
 ```$xslt
+我们一个像素做为静态文件，以Nginx记录access log,假定文件名为a.gif 文件存储在 /data/www/a.gif  数据目录存储在 /data/logs
+ 
+server{
+    listen 80;
+    server_name www.viewc.org;
+    
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" ' '$status $body_bytes_sent "$http_referer" ' '"$http_user_agent" "$http_x_forwarded_for"';
+    access_log  /data/logs/access.log  main;
+    
+    location / {
+        root /data/www;
+    }
+}
 
+log_format格式变量：
+$remote_addr  #记录访问网站的客户端地址
+$remote_user  #远程客户端用户名
+$time_local  #记录访问时间与时区
+$request  #用户的http请求起始行信息
+$status  #http状态码，记录请求返回的状态码，例如：200、301、404等
+$body_bytes_sent  #服务器发送给客户端的响应body字节数
+$http_referer  #记录此次请求是从哪个连接访问过来的，可以根据该参数进行防盗链设置。
+$http_user_agent  #记录客户端访问信息，例如：浏览器、手机客户端等
+$http_x_forwarded_for  #当前端有代理服务器时，设置web节点记录客户端地址的配置，此参数生效的前提是代理服务器也要进行相关的x_forwarded_for设置
+
+数据会落地到 /data/logs/access.log
+以分钟粒度切割access.log
+
+#!/bin/bash
+year=`date +%Y`
+month=`date +%m`
+day=`date +%d`
+logs_backup_path="/data/logs/nginx/$year$month"               #日志存储路径
+
+logs_path="/data/logs/"                                       #要切割的日志路径
+logs_access="access"                                          #要切割的日志
+logs_error="error"
+pid_path="/usr/local/nginx/logs/nginx.pid"                    #nginx的pid
+
+[ -d $logs_backup_path ]||mkdir -p $logs_backup_path
+rq=`date +%Y%m%d`
+mv ${logs_path}${logs_access}.log ${logs_backup_path}/${logs_access}_${rq}.log
+mv ${logs_path}${logs_error}.log ${logs_backup_path}/${logs_error}_${rq}.log
+kill -USR1 $(cat /usr/local/nginx/logs/nginx.pid
 ```
   如果是内网的业务系统Application LOG我们怎么选择？
   内网的数据收集服务通常是以文件信息批量进行传输，通常来说其吞吐量大，并发小，走内网。一般我们会选择像Apache Flume这类工具。
 ```aidl
+示例:
+a1.sources = s1  
+a1.sinks = k1  
+a1.channels = c1  
 
+# Describe/configure the source  
+a1.sources.s1.type =spooldir  
+a1.sources.s1.spoolDir =/home/hadoop/logs  
+a1.sources.s1.fileHeader= true  
+a1.sources.s1.channels =c1  
+   
+a1.sinks.k1.channel=c1
+a1.sinks.k1.type=org.apache.flume.sink.kafka.KafkaSink
+a1.sinks.k1.kafka.bootstrap.servers=master:9092,slave1:9092,slave2:9092,slave3:9092
+a1.sinks.k1.kafka.topic=flume-data
+a1.sinks.k1.kafka.batchSize=20
+a1.sinks.k1.kafka.producer.requiredAcks=1
+   
+# Use a channel which buffers events inmemory  
+a1.channels.c1.type = memory 
 ```
     
   如果是业务系统的生产的RMDBS数据我们怎么选择？  
@@ -101,9 +163,8 @@ Flume2KafkaAgent.sinks.mysink.kafka.producer.requiredAcks=1
 Flume2KafkaAgent.channels.mychannel.type=memory
 Flume2KafkaAgent.channels.mychannel.capacity=30000
 Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
-
 ```
-    
+  
 #### 收集的整体架构  
   
 
