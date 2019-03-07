@@ -190,7 +190,5 @@ Flume2KafkaAgent.channels.mychannel.transactionCapacity=100
 git clone https://github.com/X010/trony.git
 ```
   
-#### 与数据收集相关几个重要事项　　
-  
   
   
