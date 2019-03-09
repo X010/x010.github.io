@@ -34,8 +34,33 @@ apache Flume 是一个从可以收集例如日志，事件等数据资源，并�
     
 ##### Flume的事件  
   事件作为Flume内部数据传输的最基本单元.它是由一个转载数据的字节数组(该数据组是从数据源接入点传入，并传输给传输器，也就是HDFS/HBase)和一个可选头部构成.典型的Flume 事件如下面结构所示：
-    ![collect_flume_3](/static/img/post/flume_3.jpg){:height=""80" width="160"}
+    
+  ![collect_flume_3](/static/img/post/flume_3.jpg){:height=""80" width="160"}
+      
   我们在将event在私人定制插件时比如：flume-hbase-sink插件是，获取的就是event然后对其解析，并依据情况做过滤等，然后在传输给HBase或者HDFS.  
+   
+##### Flume Agent  
+  我们在了解了Flume的外部结构之后,知道了Flume内部有一个或者多个Agent,然而对于每一个Agent来说,它就是一共独立的守护进程(JVM),它从客户端哪儿接收收集,或者从其他的 Agent哪儿接收,然后迅速的将获取的数据传给下一个目的节点sink,或者agent. 如下图所示flume的基本模型:  
+  
+  ![collect_flume_4](/static/img/post/flume_4.jpg){:height="160" width="160"}  
+  
+  Agent主要由:source,channel,sink三个组件组成.  
+  Source:  
+  从数据发生器接收数据,并将接收的数据以Flume的event格式传递给一个或者多个通道channal,Flume提供多种数据接收的方式,比如Avro,Thrift,twitter 1%等  s  
+  Channel:  
+  channal是一种短暂的存储容器,它将从source处接收到的event格式的数据缓存起来,直到它们被sinks消费掉,它在source和sink间起着一共桥梁的作用,channal是一个完整的事务,这一点保证了数据在收发的时候的一致性. 并且它可以和任意数量的source和sink链接. 支持的类型有: JDBC channel , File System channel , Memort channel等.  
+  sink:  
+  sink将数据存储到集中存储器比如Hbase和HDFS,它从channals消费数据(events)并将其传递给目标地. 目标地可能是另一个sink,也可能HDFS,HBase.  
+  以上介绍的flume的主要组件,下面介绍一下Flume插件:  
+  1. Interceptors拦截器  
+  用于source和channel之间,用来更改或者检查Flume的events数据  
+  2. 管道选择器 channels Selectors  
+   在多管道是被用来选择使用那一条管道来传递数据(events). 管道选择器又分为如下两种:  
+   默认管道选择器:  每一个管道传递的都是相同的events  
+   多路复用通道选择器:  依据每一个event的头部header的地址选择管道.  
+  3.sink线程  
+   用于激活被选择的sinks群中特定的sink,用于负载均衡.    
+  
   
 #### Kafka  
   
