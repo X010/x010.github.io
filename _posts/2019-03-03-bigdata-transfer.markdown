@@ -46,7 +46,7 @@ apache Flume 是一个从可以收集例如日志，事件等数据资源，并�
   
   Agent主要由:source,channel,sink三个组件组成.  
   Source:  
-  从数据发生器接收数据,并将接收的数据以Flume的event格式传递给一个或者多个通道channal,Flume提供多种数据接收的方式,比如Avro,Thrift,twitter 1%等  s  
+  从数据发生器接收数据,并将接收的数据以Flume的event格式传递给一个或者多个通道channal,Flume提供多种数据接收的方式,比如Avro,Thrift,twitter 1%等  
   Channel:  
   channal是一种短暂的存储容器,它将从source处接收到的event格式的数据缓存起来,直到它们被sinks消费掉,它在source和sink间起着一共桥梁的作用,channal是一个完整的事务,这一点保证了数据在收发的时候的一致性. 并且它可以和任意数量的source和sink链接. 支持的类型有: JDBC channel , File System channel , Memort channel等.  
   sink:  
@@ -63,4 +63,18 @@ apache Flume 是一个从可以收集例如日志，事件等数据资源，并�
   
   
 #### Kafka  
+  kafka是一个分布式消息队列。具有高性能、持久化、多副本备份、横向扩展能力。生产者往队列里写消息，消费者从队列里取消息进行业务逻辑。一般在架构设计中起到解耦、削峰、异步处理的作用。  
+  kafka对外使用topic的概念，生产者往topic里写消息，消费者从读消息。为了做到水平扩展，一个topic实际是由多个partition组成的，遇到瓶颈时，可以通过增加partition的数量来进行横向扩容。单个parition内是保证消息有序。  
+  每新写一条消息，kafka就是在对应的文件append写，所以性能非常高。  
+  kafka的总体数据流是这样的：  
+  
+  ![collect_kafka_1](/static/img/post/kafka_1.webp){:height="320" width="720"}  
+  
+  大概用法就是，Producers往Brokers里面的指定Topic中写消息，Consumers从Brokers里面拉去指定Topic的消息，然后进行业务处理。图中有两个topic，topic 0有两个partition，topic 1有一个partition，三副本备份。可以看到consumer gourp 1中的consumer 2没有分到partition处理，这是有可能出现的，下面会讲到。
+关于broker、topics、partitions的一些元信息用zk来存，监控和路由啥的也都会用到zk。
+  
+##### Kafka生产  
+  
+  
+##### Kafka消费  
   
