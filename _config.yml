@@ -38,7 +38,7 @@ urls:
       url: /feed.xml
 
 url: "http://www.viewc.org"
-baseurl: "http://www.viewc.org"
+baseurl: ""
 paginate: 40
 per_page: 40
 paginate_path: "/page/:num/"
