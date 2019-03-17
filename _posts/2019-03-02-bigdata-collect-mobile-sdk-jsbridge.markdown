@@ -204,7 +204,7 @@ WebSettings settings = webview.getSettings();
         webview.loadUrl(loadurl);
 ```    
   
-#### H5与称动通讯的代理利器JSBridge   
+#### H5与移动通讯的代理利器JSBridge   
   使用的是Native+H5的方式实现的。众所周知的是在Android中，Webview所实现的java与js的交互存在一些安全问题，并且这样的使用方式，没法让一套H5同时适
 配Android和iOS两个平台，因此，就需要有一个中间组件来实现js与本地的代码的交互，也就是JsBridge。在Android平台我们选用了开源项目。
 整个库的结构也比较简单：一个用来注入的js文件，一个自定义的Webview（包括webViewClient），以及作为载体的BridgeHandler。
