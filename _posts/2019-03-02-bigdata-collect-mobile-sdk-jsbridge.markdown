@@ -204,11 +204,89 @@ WebSettings settings = webview.getSettings();
         webview.loadUrl(loadurl);
 ```    
   
-#### H5与称动通讯的代理利器JSBridge  
+#### H5与称动通讯的代理利器JSBridge   
+  使用的是Native+H5的方式实现的。众所周知的是在Android中，Webview所实现的java与js的交互存在一些安全问题，并且这样的使用方式，没法让一套H5同时适
+配Android和iOS两个平台，因此，就需要有一个中间组件来实现js与本地的代码的交互，也就是JsBridge。在Android平台我们选用了开源项目。
+整个库的结构也比较简单：一个用来注入的js文件，一个自定义的Webview（包括webViewClient），以及作为载体的BridgeHandler。
   
+##### 集成JsBridge   
+```aidl
+   repositories {  
+        maven {url "https://jitpack.io"}  
+    }  
+    dependencies {  
+        compile 'com.github.lzyzsd:jsbridge:1.0.4'
+    }
+```
   
+##### 使用JSBridge  
+```aidl
+  webView.registerHandler("submitFromWeb", new BridgeHandler(){
+      @Override
+      public void handler(String data, CallBackFunction function){
+          function.onCallBack("submitFrom web exe, response data from java");
+      }
+  }
+```  
   
+##### JS调用方式  
+```aidl
+    WebViewJavascriptBridge.send(
+        data,
+        function(responseData){
+            //java中DefaultHandler所实现的方法中callback所定义的入参
+        }
+    )
+```    
   
-#### 定义中间通讯的协议  
+##### JSBridge 使用原理  
+```aidl
+WebViewJavascriptBridge.js　　　　　被注入到各个页面的js文件；提供初始化，注册Handler，调用Handler等方法。
+WebViewJavascriptBridge.java　　　　bridge接口文件,定义了发送信息的方法，由BridgeWebView来实现。  
+BridgeWebView.java　　　　　　　　　WebView的子类，提供了注册Handler，调用Handler等方法。  
+BridgeWebViewClient.java　　　　 　　WebViewClient的子类，重写了ShouldOverrideUrlLoading，onPageFinish，onPageStart等方法。  
+BridgeHandler.java　　　　 　　　　　作为Java与Js交互的载体。Java&Js通过Handler的名称来找到响应的Handler来操作。  
+DefaultBridgeHandler.java　　　　　　BridgeHandler的子类，不做任何操作。仅为Java提供默认的接收数据的Handler  
+CallBackFunction.java　　　　　　　　回调函数，Handler处理完成后，用来给Js发送消息。  
+Message.java　　　　　　　　　　　　 消息对象，用来封装与js交互时的json数据，callid，responseid等。  
+BridgeUtil.java　　　　　　　　　　　　工具类，提供从Url中提取数据，获取回调方法，注入js等方法  
+```
+
+##### JsBridge调用过程  
+```aidl
+1.Native初始化webview，注册Handler；加载页面完成后，将WebViewJavascriptBridge.js文件注入页面。查询消息队列是否有信息需要被接收。
+2.H5页面初始化，注册Handler，查询消息队列是否有信息需要别接收。
+3.用户操作，H5调用本地功能：Js将消息内容放在sendMessageQueue中，并设置iframe的src为yy://__QUEUE_MESSAGE__/
+4.Webview设置的WebViewClient拦截到约定url，调用Webview的刷新消息队列的方法flushMessageQueue，此方法就是加载了一个url：javascript:WebViewJavascriptBridge._fetchQueue();,这也是Js中定义的方法，另外定义了一个回调；回调方法主要做了两件事：①判断Native是否为此返回数据保有响应回调操作，若有，则执行，若没有，则为判断callId，不为空时为这个callId初始化一个回调。②通过handlername判断是否为默认的Handler还是自定义的Handler，调用相应Handler的handler方法，入参为消息数据内容和第一步中定义的回调。【这段较为难消化，需要阅读代码来理解】
+5.Js中_fetchQueue设置了iframe的src，内容为：yy://return/_fetchQueue/+第二步中放入sendMessageQueue中的消息内容。
+6.WebViewClient拦截到url为yy://return/，调用WebView的handlerReturnData方法；通过url中定义的方法名，找到第四个步骤中定义的回调，并调用。回调方法走完后，删除此回调方法。
+7.如果Js在调用Handler的时候设置了回调方法，也就是在第四步骤中的含有callId，就会调用queueMessage的方法，然后往下就是走Native给Js发送消息的步骤。
+8.Ps: Native给Js发送消息的步骤跟上述从第三步骤到第七步骤完全相同，只不过Native和Js对象调换位置即可。
+```
   
+#### 定义中间通讯的协议   
+  上面已经解释了如何实现WebView与H5之前的相互通讯，接下来，我们定义两者这间的通讯格式:  
+  本质上通讯格式的定义无非以下几个要点：  
+```aidl
+1.H5页面需求知道当前页面的打开是不是在APP内  
+    我们可以通过JS判断容器的User-Agent以实现判断当前页面是否在我们定的WebView中打开，如判断当前的User-Agent是不是VIEWC-APP  
+2.移动端需要向WebView注入几个方法实现JS的调度将数据上报给移动端  
+    根据WEBSDK我们抽像的方法凡非以下几个:
+    1.1 页面浏览类方法  pageview
+    1.2 点击类方法  clickEvent
+    1.3 控件类曝光方法 showEvent
+    1.4 其它自定义方法  customEvent  
+每个方法通过JSON体的字符串信息进行数据传递  
+```
+  
+  因此具体流程如下：  
+```aidl
+1.页面在WEBVIEW打开
+2.页面JS判断我们当前是在ViewC 的WebView中打开  
+3.调入APP Native注入有pageView等方法
+4.将数据以JSON上报给JAVA代码  
+5.整合移动端的信息  
+6.Java代码进行格式化处理走Http上报给服务端
+
+```
   
