@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "推荐系统之路整体架构"
+title:  "推荐系统之路之整体架构"
 date:   2019-08-01 00:18:23 +0700
 categories: [bigdata]
 ---

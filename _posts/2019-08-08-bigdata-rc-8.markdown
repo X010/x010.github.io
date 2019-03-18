@@ -1,0 +1,8 @@
+---
+layout: post
+title:  "推荐系统之路之物品特征工程"
+date:   2019-08-07 00:18:23 +0700
+categories: [bigdata]
+---
+
+#### 概述
